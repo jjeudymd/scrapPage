@@ -7,14 +7,11 @@
         <script src="https://cdn.ckeditor.com/ckeditor5/<version>/classic/ckeditor.js"></script>
     </head>
     <body>
-        <form>
-            <textarea name="editor1" id="editor1" rows="80" cols="80">
-                Let's start writing! ...
-            </textarea>
-        </form>
+<div id="editor"></div>
+        
 <script>
     ClassicEditor
-        .create( document.querySelector( 'editor1' ) )
+        .create( document.querySelector( 'editor' ) )
         .catch( error => {
             console.error( error );
         } );
