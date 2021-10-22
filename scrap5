@@ -1,0 +1,27 @@
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>JJMD SCRAP</title>
+        <!-- Make sure the path to CKEditor is correct. -->
+        <script src="https://cdn.ckeditor.com/ckeditor5/<version>/classic/ckeditor.js"></script>
+
+    </head>
+    <body>
+        <form>
+            <textarea name="editor1" id="editor1" rows="80" cols="80">
+                Let's start writing! ...
+            </textarea>
+<script>
+    ClassicEditor
+        .create( document.querySelector( 'editor1' ) )
+        .catch( error => {
+            console.error( error );
+        } );
+</script>
+        </form>
+    </body>
+</html>
+
