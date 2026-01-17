@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Radiology Insight - High Contrast Gallery</title>
+        <!-- Montserrat Font (Weight 900) -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+
+        <style>
+            body {
+                background-color: #121212;
+                color: #ffffff;
+                font-family: "Segoe UI", Roboto, sans-serif;
+                margin: 0;
+                padding: 40px;
+                text-align: center;
+            }
+
+            h1 {
+                font-family: "Montserrat", sans-serif;
+                font-weight: 900;
+                font-size: 42px;
+                margin-bottom: 30px;
+                letter-spacing: -1px;
+            }
+
+            .search-row {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-bottom: 50px;
+            }
+
+            input {
+                padding: 14px 20px;
+                width: 350px;
+                border-radius: 8px;
+                border: 1px solid #444;
+                background: #1e1e1e;
+                color: white;
+                font-size: 16px;
+            }
+
+            /* Medium Gray Search Button */
+            .btn-search {
+                padding: 14px 28px;
+                background-color: #757575;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            .btn-search:hover {
+                background-color: #616161;
+            }
+
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .panel {
+                background: #1e1e1e;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                border: 1px solid #333;
+            }
+            .panel img {
+                width: 100%;
+                height: 150px;
+                object-fit: cover;
+                background: black;
+            }
+            .panel h4 {
+                font-size: 11px;
+                padding: 10px;
+                margin: 0;
+                line-height: 1.3;
+                color: #ffffff;
+                font-weight: normal;
+            }
+
+            /* Large Circular Pagination */
+            .pagination {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-top: 50px;
+                align-items: center;
+            }
+            .pg-btn {
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                border: 1px solid #444;
+                background: #1e1e1e;
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                transition: all 0.2s;
+            }
+            .pg-btn:hover {
+                background: #333;
+            }
+            .pg-btn.active {
+                background: #2196f3;
+                border-color: #2196f3;
+            }
+            .pg-btn:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>RADIOLOGY INSIGHT</h1>
+
+        <div class="search-row">
+            <input
+                type="text"
+                id="qInput"
+                placeholder="Enter clinical query..."
+                onkeypress="if(event.key==='Enter') startNewSearch()"
+            />
+            <button class="btn-search" onclick="startNewSearch()">
+                SEARCH
+            </button>
+        </div>
+
+        <div id="results" class="gallery"></div>
+
+        <div class="pagination">
+            <button class="pg-btn" id="prevBtn" onclick="movePage(-10)">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <div id="pageNumbers" style="display: flex; gap: 8px">
+                <!-- Pages 1, 2, 3, 4 will be here -->
+            </div>
+            <button class="pg-btn" id="nextBtn" onclick="movePage(10)">
+                <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
+
+        <script>
+            let startIndex = 1;
+            const API_KEY = "AIzaSyB5f9a4rqgptWlM44hnN_4d6pz28GM4GxQ";
+            const CX = "330e772edde5641f3";
+            const SITES =
+                "(site:www.ncbi.nlm.nih.gov/pmc OR site:pubs.rsna.org OR site:radiopaedia.org OR site:arrs.org)";
+
+            function startNewSearch() {
+                startIndex = 1;
+                fetchGallery();
+            }
+
+            async function fetchGallery() {
+                const query = document.getElementById("qInput").value;
+                if (!query) return;
+
+                const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query + " " + SITES)}&searchType=image&start=${startIndex}`;
+
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    render(data.items || []);
+                    renderPagination();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function render(items) {
+                const container = document.getElementById("results");
+                container.innerHTML = items
+                    .map(
+                        (item) => `
+                <div class="panel">
+                    <a href="${item.image.contextLink}" target="_blank">
+                        <img src="${item.link}" alt="${item.title}">
+                    </a>
+                    <h4>${item.title}</h4>
+                </div>
+            `,
+                    )
+                    .join("");
+            }
+
+            function renderPagination() {
+                const pageDiv = document.getElementById("pageNumbers");
+                const totalPages = 4;
+                const currentPg = Math.floor(startIndex / 10) + 1;
+
+                pageDiv.innerHTML = "";
+                for (let i = 1; i <= totalPages; i++) {
+                    const activeClass = i === currentPg ? "active" : "";
+                    pageDiv.innerHTML += `<button class="pg-btn ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+                }
+
+                document.getElementById("prevBtn").disabled = startIndex === 1;
+                document.getElementById("nextBtn").disabled = startIndex >= 31; // Page 4 ends at index 31-40
+            }
+
+            function goToPage(pageNum) {
+                startIndex = (pageNum - 1) * 10 + 1;
+                fetchGallery();
+                window.scrollTo(0, 0);
+            }
+
+            function movePage(delta) {
+                startIndex += delta;
+                fetchGallery();
+                window.scrollTo(0, 0);
+            }
+        </script>
+    </body>
+</html>
