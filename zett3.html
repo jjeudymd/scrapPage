@@ -187,16 +187,25 @@
 
             function render(items) {
                 const container = document.getElementById("results");
+                if (items.length === 0) {
+                    container.innerHTML =
+                        '<p style="grid-column: 1/-1;">No results found.</p>';
+                    return;
+                }
+
                 container.innerHTML = items
                     .map(
                         (item) => `
-                <div class="panel">
-                    <a href="${item.image.contextLink}" target="_blank">
-                        <img src="${item.link}" alt="${item.title}">
-                    </a>
-                    <h4>${item.title}</h4>
-                </div>
-            `,
+                    <div class="panel">
+                        <a href="${item.image.contextLink}" target="_blank">
+                            <!-- USE thumbnailLink INSTEAD OF link TO BYPASS CORS/CORP BLOCKS -->
+                            <img src="${item.image.thumbnailLink}"
+                                 alt="${item.title}"
+                                 onerror="this.src='https://via.placeholder.com/200x150?text=Image+Blocked'">
+                        </a>
+                        <h4>${item.title}</h4>
+                    </div>
+                `,
                     )
                     .join("");
             }
