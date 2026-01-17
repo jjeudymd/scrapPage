@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Radiology Gallery Search</title>
+        <!-- 1. The script must be in the head -->
+
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                padding: 20px;
+                max-width: 1100px;
+                margin: auto;
+            }
+            .search-area {
+                background: #fff;
+                border: 1px solid #dfe1e5;
+                padding: 20px;
+                border-radius: 24px;
+                box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+                margin-bottom: 30px;
+            }
+            input {
+                border: none;
+                outline: none;
+                width: 80%;
+                font-size: 18px;
+                padding: 10px;
+            }
+            button {
+                background: #1a73e8;
+                color: white;
+                border: none;
+                padding: 10px 24px;
+                border-radius: 4px;
+                cursor: pointer;
+                float: right;
+            }
+            #results-box {
+                min-height: 600px;
+                border-top: 1px solid #eee;
+                padding-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="search-area">
+            <input
+                type="text"
+                id="userInput"
+                placeholder="Search (e.g. Lung MRI)..."
+                onkeypress="if(event.key==='Enter') executeFinalSearch()"
+            />
+            <button onclick="executeFinalSearch()">Search</button>
+        </div>
+        <script
+            async
+            src="https://cse.google.com/cse.js?cx=330e772edde5641f3"
+        ></script>
+        <div class="gcse-searchresults-only"></div>
+        <!-- 2. Use the standard results-only tag with image search default -->
+        <div id="results-box">
+            <div
+                class="gcse-searchresults-only"
+                data-defaultToImageSearch="true"
+            ></div>
+        </div>
+
+        <script>
+            function executeFinalSearch() {
+                const val = document.getElementById("userInput").value;
+                if (!val) return;
+
+                // 3. ROBUST EXECUTION LOGIC
+                // We poll for the google object to ensure it's loaded
+                const checkAndRun = setInterval(() => {
+                    try {
+                        const element = google.search.cse.element.getElement();
+                        if (element) {
+                            element.execute(fullQuery);
+                            clearInterval(checkAndRun); // Stop checking once it works
+                        }
+                    } catch (e) {
+                        console.log("Waiting for Google Search Library...");
+                    }
+                }, 100);
+
+                // Timeout after 5 seconds to prevent infinite loop if blocked by browser
+                setTimeout(() => clearInterval(checkAndRun), 5000);
+            }
+        </script>
+    </body>
+</html>
