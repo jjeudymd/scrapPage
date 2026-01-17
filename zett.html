@@ -1,95 +1,72 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Radiology Gallery Search</title>
-        <!-- 1. The script must be in the head -->
+<head>
+    <meta charset="UTF-8">
+    <title>Radiology Image Gallery</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; max-width: 900px; margin: auto; background: #f8f9fa; }
+        .search-wrapper { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .input-group { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; }
+        button { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        #results-container { min-height: 500px; }
+    </style>
+</head>
+<body>
 
-        <style>
-            body {
-                font-family:
-                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                    sans-serif;
-                padding: 20px;
-                max-width: 1100px;
-                margin: auto;
-            }
-            .search-area {
-                background: #fff;
-                border: 1px solid #dfe1e5;
-                padding: 20px;
-                border-radius: 24px;
-                box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
-                margin-bottom: 30px;
-            }
-            input {
-                border: none;
-                outline: none;
-                width: 80%;
-                font-size: 18px;
-                padding: 10px;
-            }
-            button {
-                background: #1a73e8;
-                color: white;
-                border: none;
-                padding: 10px 24px;
-                border-radius: 4px;
-                cursor: pointer;
-                float: right;
-            }
-            #results-box {
-                min-height: 600px;
-                border-top: 1px solid #eee;
-                padding-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="search-area">
-            <input
-                type="text"
-                id="userInput"
-                placeholder="Search (e.g. Lung MRI)..."
-                onkeypress="if(event.key==='Enter') executeFinalSearch()"
-            />
-            <button onclick="executeFinalSearch()">Search</button>
+    <div class="search-wrapper">
+        <h2>Radiology Image Search</h2>
+        <div class="input-group">
+            <input type="text" id="queryInput" placeholder="Enter query (e.g. 'HFpEF Cardiac MRI')" onkeypress="if(event.key==='Enter') startSearch()">
+            <button onclick="startSearch()">Search</button>
         </div>
-        <script
-            async
-            src="https://cse.google.com/cse.js?cx=330e772edde5641f3"
-        ></script>
-        <div class="gcse-searchresults-only"></div>
-        <!-- 2. Use the standard results-only tag with image search default -->
-        <div id="results-box">
-            <div
-                class="gcse-searchresults-only"
-                data-defaultToImageSearch="true"
-            ></div>
-        </div>
+        <p style="font-size: 11px; color: #6c757d; margin-top: 8px;">
+            Targeting: PMC, RSNA, Radiopaedia, and ARRS.
+        </p>
+    </div>
 
-        <script>
-            function executeFinalSearch() {
-                const val = document.getElementById("userInput").value;
-                if (!val) return;
+    <div id="results-container">
+        <!-- Results will be injected here -->
+        <div class="gcse-searchresults-only" data-defaultToImageSearch="true" data-gname="radGallery"></div>
+    </div>
 
-                // 3. ROBUST EXECUTION LOGIC
-                // We poll for the google object to ensure it's loaded
-                const checkAndRun = setInterval(() => {
-                    try {
-                        const element = google.search.cse.element.getElement();
-                        if (element) {
-                            element.execute(fullQuery);
-                            clearInterval(checkAndRun); // Stop checking once it works
-                        }
-                    } catch (e) {
-                        console.log("Waiting for Google Search Library...");
+    <script>
+        // 1. Script Loader that handles protocols more safely
+        (function() {
+            var cx = '330e772edde5641f3';
+            var gcse = document.createElement('script');
+            gcse.type = 'text/javascript';
+            gcse.async = true;
+            // Use explicit https to avoid file:// protocol issues
+            gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(gcse, s);
+        })();
+
+        // 2. Search execution function
+        function startSearch() {
+            const userVal = document.getElementById('queryInput').value;
+            if (!userVal) return;
+
+            const siteFilter = "(site:www.ncbi.nlm.nih.gov/pmc OR site:pubs.rsna.org OR site:radiopaedia.org OR site:arrs.org)";
+            const finalQuery = userVal + " " + siteFilter;
+
+            // Wait for Google to be ready before calling execute
+            const poll = setInterval(() => {
+                try {
+                    const element = google.search.cse.element.getElement('radGallery');
+                    if (element) {
+                        element.execute(finalQuery);
+                        clearInterval(poll);
                     }
-                }, 100);
-
-                // Timeout after 5 seconds to prevent infinite loop if blocked by browser
-                setTimeout(() => clearInterval(checkAndRun), 5000);
-            }
-        </script>
-    </body>
+                } catch (e) {
+                    console.log("Initializing Google Search...");
+                }
+            }, 200);
+            
+            // Safety timeout
+            setTimeout(() => clearInterval(poll), 5000);
+        }
+    </script>
+</body>
 </html>
